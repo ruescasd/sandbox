@@ -1,0 +1,14 @@
+{
+  "name": "egv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "tsc && node build/test.js",
+    "clean": "del build\\* /q"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
