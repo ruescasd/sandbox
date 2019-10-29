@@ -37,7 +37,7 @@ export declare namespace arithm {
         mul(other: PRingElement | LargeInteger): PRingElement
         add(other: PRingElement | LargeInteger): PRingElement
         sub(other: PRingElement | LargeInteger): PRingElement
-        inv(other: PRingElement | LargeInteger): PRingElement
+        inv(): PRingElement
     }
 
     class PFieldElement extends PRingElement {
@@ -163,4 +163,5 @@ export declare namespace crypto {
 export declare namespace util {
     function asciiToByteArray(ascii: string): Uint8Array
     function byteArrayToAscii(bytes: Uint8Array): string
+    function fill<T>(value: T, width: number): Array<T>
 }
