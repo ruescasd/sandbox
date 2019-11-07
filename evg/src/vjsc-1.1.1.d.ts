@@ -11,9 +11,17 @@ export declare namespace arithm {
     }
     
     class LargeInteger extends sli.SLI {
+        static ONE: LargeInteger
+        
         constructor(first: any, second?: any)
 
-        static ONE: LargeInteger
+        mul(other: LargeInteger): LargeInteger 
+        add(other: LargeInteger): LargeInteger
+        sub(other: LargeInteger): LargeInteger
+        div(other: LargeInteger): LargeInteger
+
+        toByteArray(): Uint8Array
+        toByteArrayAlt(): Uint8Array
     }
 
     class PRing extends ArithmObject{
@@ -22,6 +30,7 @@ export declare namespace arithm {
         randomElement(randomSource: crypto.RandomSource, statDist: number): PRingElement
         getPField(): PField
         getONE(): PRingElement
+        toElement(byteTree: eio.ByteTree | Uint8Array): PRingElement
     }
 
     class PField extends PRing {
@@ -51,6 +60,10 @@ export declare namespace arithm {
         getONE(): PGroupElement
         getg(): PGroupElement
         getElementOrder(): LargeInteger
+        getEncodeLength(): number
+        toElement(byteTree: eio.ByteTree | Uint8Array): PGroupElement
+        // when PPGroup, we need a bytetree to pass in
+        toElementAlt(byteTree: eio.ByteTree): PGroupElement
     }
     
     class PGroupElement extends ArithmObject {
@@ -61,6 +74,8 @@ export declare namespace arithm {
         exp(exponent: LargeInteger | PRingElement): ModPGroupElement
         inv(): ModPGroupElement
         decode(destination: Uint8Array, startIndex: number): number
+        toByteTree(): eio.ByteTree
+        toByteTreeNoZero(): eio.ByteTree
     }
     
     class PPGroup extends PGroup {
@@ -75,16 +90,18 @@ export declare namespace arithm {
     }
     
     class ModPGroup extends PGroup {
-        constructor(modulus: any, order: any, gi: any, encoding: any)
-        
         static getPGroupNames(): string[]
         static getPGroup(groupName: string): ModPGroup
         static getParams (groupName: string): string[]
+        
+        constructor(modulus: any, order: any, gi: any, encoding: any)
         
         getONE(): ModPGroupElement
         getg(): ModPGroupElement
         getElementOrder(): LargeInteger
         encode(bytes: Uint8Array, startIndex: number, length: number): ModPGroupElement
+        // toElement(byteTree: eio.ByteTree): ModPGroupElement
+        toElement(byteTree: eio.ByteTree | Uint8Array): ModPGroupElement
     }
     
     class ModPGroupElement extends PGroupElement {
@@ -101,6 +118,8 @@ export declare namespace arithm {
     }
     class ExpHom extends Hom {
         domain: PRing
+        range: PGroup
+
         constructor(domain: PRing, basis: PGroupElement)
         eva(value: PRingElement): PGroupElement
     }
@@ -131,6 +150,11 @@ export declare namespace crypto {
     
     class SigmaProof extends ZKPoK {
         constructor()
+
+        instanceToByteTree(instance: arithm.PGroupElement): eio.ByteTree
+        byteTreeToCommitment(byteTree: eio.ByteTree): arithm.PGroupElement
+        byteTreeToReply(byteTree: eio.ByteTree): arithm.PRingElement
+        challenge(first: eio.ByteTree, second: crypto.HashFunction): arithm.PRingElement
     }
 
     class SigmaProofPara extends SigmaProof {
@@ -142,6 +166,8 @@ export declare namespace crypto {
     }
     
     class SchnorrProof extends SigmaProof {
+        homomorphism: arithm.ExpHom
+
         constructor(homomorphism: arithm.Hom)
     }
 
@@ -163,5 +189,21 @@ export declare namespace crypto {
 export declare namespace util {
     function asciiToByteArray(ascii: string): Uint8Array
     function byteArrayToAscii(bytes: Uint8Array): string
+    function hexToByteArray(hex: string): Uint8Array
+    function byteArrayToHex(bytes: Uint8Array): string
     function fill<T>(value: T, width: number): Array<T>
+    function equalsArray(a: Uint8Array, b: Uint8Array): boolean
+}
+
+export declare namespace eio {
+    class ByteTree {
+        static asByteTree(value: ByteTree | Uint8Array): ByteTree
+        
+        constructor(value: Uint8Array | ByteTree[] | string)
+
+        isLeaf(): boolean
+        toByteArray(): Uint8Array
+        toByteArrayRaw(): Uint8Array
+        toPrettyString(): string
+    }
 }

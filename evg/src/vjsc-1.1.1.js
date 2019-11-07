@@ -852,11 +852,13 @@ i++;
 j++;
 }
 
+
 return 1 + 4 + this.value.length;
 
 } else {
 
 var origIndex = index;
+
 
 destination[index] = ByteTree.NODE;
 index++;
@@ -872,6 +874,38 @@ index += this.value[k].setToByteArray(destination, index);
 return index - origIndex;
 }
 };
+
+// drb
+ByteTree.prototype.setToByteArrayRaw = function (destination, index) {
+if (this.type === ByteTree.LEAF) {
+
+var i = index;
+var j = 0;
+while (j < this.value.length) {
+destination[i] = this.value[j];
+i++;
+j++;
+}
+
+return this.value.length;
+
+} else {
+
+var origIndex = index;
+
+for (var k = 0; k < this.value.length; k++) {
+index += this.value[k].setToByteArrayRaw(destination, index);
+}
+return index - origIndex;
+}
+};
+
+ByteTree.prototype.toByteArrayRaw = function () {
+var array = [];
+this.setToByteArrayRaw(array, 0);
+return array;
+};
+// drb
 
 /**
 * @description Generates a representation of this byte tree as a byte
@@ -4973,6 +5007,16 @@ li.resize(dense, byteSize);
 return dense.reverse();
 };
 
+// drb
+LargeInteger.prototype.toByteArrayNoZero = function () {
+// no leading 0 bit
+var MASK_TOP_8 = 0x00;
+var dense = util.change_wordsize(this.value, li.WORDSIZE, 8);
+li.normalize(dense, MASK_TOP_8);
+return dense.reverse();
+};
+// drb
+
 /**
 * @description Computes a byte tree representation of this integer.
 * @return Byte tree representation of this integer.
@@ -6365,6 +6409,13 @@ var byteArray = this.value.toByteArray(this.pGroup.modulusByteLength);
 return new eio.ByteTree(byteArray);
 };
 
+// drb
+ModPGroupElement.prototype.toByteTreeNoZero = function () {    
+var byteArray = this.value.toByteArrayNoZero();
+return new eio.ByteTree(byteArray);
+};
+// drb
+
 ModPGroupElement.prototype.toString = function () {
 return this.value.toHexString();
 };
@@ -6572,7 +6623,18 @@ ModPGroup.prototype.getONE = function () {
 return this.ONE;
 };
 
-ModPGroup.prototype.toElement = function (byteTree) {
+ModPGroup.prototype.toElement = function (bytes) {
+// drb
+/* if (!byteTree.isLeaf()) {
+throw Error("Byte tree is not a leaf!");
+}
+if (byteTree.value.length !== this.modulusByteLength) {
+throw Error("Wrong number of bytes! (" +
+byteTree.value.length + " = " +
+this.modulusByteLength + ")");
+}*/
+if (util.ofType(bytes, eio.ByteTree)) {
+var byteTree = bytes;
 if (!byteTree.isLeaf()) {
 throw Error("Byte tree is not a leaf!");
 }
@@ -6581,13 +6643,35 @@ throw Error("Wrong number of bytes! (" +
 byteTree.value.length + " = " +
 this.modulusByteLength + ")");
 }
-var value = new LargeInteger(byteTree.value);
+var value = new LargeInteger(byteTree.value); 
+}
+else {
+var value = new LargeInteger(bytes);
+}
+
+if (this.encoding == 1 && value.legendre(this.modulus) !== 1) {
+throw Error("Not a quadratic residue!")    
+}
 
 if (this.modulus.cmp(value) <= 0) {
 throw Error("Integer representative not canonically reduced!");
 }
 return new ModPGroupElement(this, value);
 };
+
+// drb
+ModPGroup.prototype.toElementAlt = function (byteTree) {
+var value = new LargeInteger(byteTree.toByteArrayRaw());
+if (this.encoding == 1 && value.legendre(this.modulus) !== 1) {
+    throw Error("Not a quadratic residue!")    
+}
+
+if (this.modulus.cmp(value) <= 0) {
+throw Error("Integer representative not canonically reduced!");
+}
+return new ModPGroupElement(this, value);
+};
+// drb
 
 ModPGroup.prototype.encode = function (bytes, startIndex, length) {
 var elen = this.encodeLength;
@@ -6763,6 +6847,16 @@ children[i] = this.values[i].toByteTree();
 }
 return new verificatum.eio.ByteTree(children);
 };
+
+// drb
+PPGroupElement.prototype.toByteTreeNoZero = function () {
+var children = [];
+for (var i = 0; i < this.values.length; i++) {
+children[i] = this.values[i].toByteTreeNoZero();
+}
+return new verificatum.eio.ByteTree(children);
+};
+// drb
 
 PPGroupElement.prototype.toString = function () {
 var s = "";
@@ -6961,6 +7055,22 @@ return new PPGroupElement(this, children);
 throw Error("Input byte tree does not represent an element!");
 }
 };
+
+// drb
+PPGroup.prototype.toElementAlt = function (byteTree) {
+if (!byteTree.isLeaf() ||
+byteTree.value.length === this.pGroups.length) {
+
+var children = [];
+for (var i = 0; i < this.pGroups.length; i++) {
+children[i] = this.pGroups[i].toElement(byteTree.value[i].value);
+}
+return new PPGroupElement(this, children);
+} else {
+throw Error("Input byte tree does not represent an element!");
+}
+};
+// drb
 
 PPGroup.prototype.getByteLength = function () {
 return this.byteLength;
@@ -7858,6 +7968,9 @@ return this.check(instance, commitment, challenge, reply);
 return false;
 }
 } catch (err) {
+// drb
+throw err;
+// drb
 return false;
 }
 };
@@ -9271,6 +9384,7 @@ return {
 module.exports = {
     arithm: verificatum.arithm,
     crypto: verificatum.crypto,
-    util: verificatum.util
+    util: verificatum.util,
+    eio: verificatum.eio
 }
 // drb

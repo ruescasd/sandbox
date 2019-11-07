@@ -14,7 +14,14 @@ re prime order and subgroup.
 
 */
 
-import { arithm, crypto, util } from "./vjsc-1.1.1.js"
+import { arithm, crypto, util, eio } from "./vjsc-1.1.1.js"
+
+console.log("****************** test.js ******************")
+
+/////////////////////// Randomness ///////////////////////
+
+let randomSource = new crypto.RandomDevice()
+let statDist = 50
 
 /////////////////////// Obtaining groups, generator, LI ///////////////////////
 
@@ -31,11 +38,6 @@ let generatorLI: arithm.LargeInteger = new arithm.LargeInteger(gString)
 let g1: arithm.ModPGroupElement = group.getg()
 let order: arithm.LargeInteger = group.getElementOrder()
 console.log(g1.exp(order).equals(group.getONE()))
-
-/////////////////////// Randomness ///////////////////////
-
-let randomSource = new crypto.RandomDevice()
-let statDist = 50
 
 /////////////////////// Byte arrays in typescript ///////////////////////
 
@@ -107,15 +109,15 @@ for (let j = 0; j < 2; j++) {
     }
 }
 
-sp = new crypto.SigmaProofOr(group.pRing, sps)
-proof = sp.prove(label, instances, [witnesses[correct], correct],
+const spo = new crypto.SigmaProofOr(group.pRing, sps)
+proof = spo.prove(label, instances, [witnesses[correct], correct],
     crypto.sha256, randomSource, 50)
-ok = sp.verify(label, instances, crypto.sha256, proof)
+ok = spo.verify(label, instances, crypto.sha256, proof)
 console.log(ok)
 let badWitness = eh.domain.randomElement(randomSource, statDist) 
-let invalidProof = sp.prove(label, instances, [badWitness, correct],
+let invalidProof = spo.prove(label, instances, [badWitness, correct],
     crypto.sha256, randomSource, 50)
-ok = sp.verify(label, instances, crypto.sha256, invalidProof)
+ok = spo.verify(label, instances, crypto.sha256, invalidProof)
 console.log(!ok)
 
 /////////////////////// Threshold Cryptosystem ///////////////////////

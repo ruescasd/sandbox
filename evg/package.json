@@ -4,11 +4,13 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "tsc && node build/test.js",
+    "test": "tsc && node build/test.js && node build/test2.js",
     "clean": "del build\\* /q"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "@types/node": "^12.12.6"
+  }
 }
