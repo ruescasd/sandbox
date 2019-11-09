@@ -151,13 +151,15 @@ export declare namespace crypto {
     class SigmaProof extends ZKPoK {
         constructor()
 
-        instanceToByteTree(instance: arithm.PGroupElement): eio.ByteTree
+        instanceToByteTree(instance: arithm.PGroupElement | arithm.PGroupElement[]): eio.ByteTree
         byteTreeToCommitment(byteTree: eio.ByteTree): arithm.PGroupElement
         byteTreeToReply(byteTree: eio.ByteTree): arithm.PRingElement
         challenge(first: eio.ByteTree, second: crypto.HashFunction): arithm.PRingElement
     }
 
     class SigmaProofPara extends SigmaProof {
+        sigmaProofs: SigmaProof[]
+        
         constructor(sigmaProofs: SigmaProof[])
     }
 

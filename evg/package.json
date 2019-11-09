@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "tsc && node build/test.js && node build/test2.js",
+    "test": "tsc && node build/test2.js",
     "clean": "del build\\* /q"
   },
   "keywords": [],

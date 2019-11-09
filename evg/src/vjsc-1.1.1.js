@@ -256,6 +256,7 @@
 * system is implemented properly.
 * @namespace verificatum
 */
+
 var verificatum = (function () {
 
 /**
@@ -7954,6 +7955,7 @@ var lbt = eio.ByteTree.asByteTree(label);
 var ibt = this.instanceToByteTree(instance);
 
 var cbt = pbt.value[0];
+
 var commitment = this.byteTreeToCommitment(cbt);
 
 // Then we simply pack label, instance, and commitment.

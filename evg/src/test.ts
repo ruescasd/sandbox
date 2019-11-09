@@ -15,6 +15,7 @@ re prime order and subgroup.
 */
 
 import { arithm, crypto, util, eio } from "./vjsc-1.1.1.js"
+import { inspect } from "util"
 
 console.log("****************** test.js ******************")
 
@@ -112,7 +113,9 @@ for (let j = 0; j < 2; j++) {
 const spo = new crypto.SigmaProofOr(group.pRing, sps)
 proof = spo.prove(label, instances, [witnesses[correct], correct],
     crypto.sha256, randomSource, 50)
+console.log("CDS")
 ok = spo.verify(label, instances, crypto.sha256, proof)
+console.log("=====================")
 console.log(ok)
 let badWitness = eh.domain.randomElement(randomSource, statDist) 
 let invalidProof = spo.prove(label, instances, [badWitness, correct],
@@ -249,3 +252,6 @@ decryption.decode(decryptedBytes, 0)
 
 decryptedString = util.byteArrayToAscii(decryptedBytes) 
 console.log(messageString == decryptedString)
+
+
+
